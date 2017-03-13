@@ -90,7 +90,7 @@ def download_images(img_list, save_path):
     for img_num, img_url in img_list:
         img_file = get_url(img_url)
         with open(os.path.join(save_path, '{:04d}.jpg'.format(img_num)), 'wb') as output:
-            output.write(img_file.read())
+            output.write(img_file)
 
 
 def create_pdf(folder, chapter_num):
