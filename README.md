@@ -1,0 +1,5 @@
+# getComicPDF
+This repository is for getting comics in pdf format. You just have to provide the name of the comic as you can see it on the website. For example if you want to have everything from http://www.readcomics.tv/tomb-raider/chapter-1 you have to give first the name from the URL, in this case  tomb-raider and after that how many chapters you want to have. Everything else is done automatically and you get one pdf per chapter in the end.
+To use the windows part with python you need to have BeautifulSoup4 (instructions may be found here: https://www.crummy.com/software/BeautifulSoup/bs4/doc/) and ImageMagick (https://www.imagemagick.org/script/download.php a verison that is able to handle the "magick" command). There is also a .exe file build from the script which minizes the requirements to only ImageMagick.
+ The linux version is out of date and will not work at the moment.
+The exe file should be executeable without having to setup anything. The error handling is not very helpfull and the exe will just crash if anything goes wrong. Probably a nice gui would be cool...
