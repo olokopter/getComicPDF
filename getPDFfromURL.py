@@ -13,11 +13,10 @@ from subprocess import call
 from threading import Thread
 
 from bs4 import BeautifulSoup
-
+import glob
 
 HEADER = {
-    'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) '
-                   'Chrome/23.0.1271.64 Safari/537.11'),
+    'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
     'Accept-Encoding': 'none',
@@ -38,6 +37,7 @@ def get_input(question):
 
 def get_url(url):
     """Get contents of requested url."""
+    print(url)
     req = Request(url, headers=HEADER)
     return urlopen(req).read()
 
@@ -97,22 +97,40 @@ def create_pdf(folder, chapter_num):
     """Create pdf using magick on Windows and convert on else."""
     images_path = os.path.join(folder, '*.jpg')
     pdf_path = os.path.join(folder, 'chapter_{:03d}.pdf'.format(chapter_num))
-    if platform.system == 'Windows':
+    
+    if platform.system() == 'Windows':
         toolname = 'magick'
     else:
         toolname = 'convert'
+    print(toolname+" "+str(images_path)+" "+pdf_path)
     call([toolname, images_path, pdf_path])
 
-
+def clean_jpg(folder):
+    images_path = os.path.join(folder, '*.jpg')
+    listWithjpgFiles = glob.glob(images_path)
+    for jpgFile in listWithjpgFiles:
+        os.remove(jpgFile)
+    
 def main():
     comic_str = get_input('Provide input string after main adress: ')
-    url = os.path.join(COMIC_PAGE, 'comic', comic_str)
+    numSpChapter_str = get_input('Give number of chapter that you want to dl (if blank all are loaded): ')
+    url = COMIC_PAGE+'/comic/'+comic_str+"/"
     threadlist = []
-
+    numSpChapter=-1
+    print("Running on",platform.system())
+    if  numSpChapter_str:
+        try:
+           numSpChapter = int(numSpChapter_str)
+        except ValueError:
+           print("Please provide int chapter!")
+           exit(1)
     print('Getting chapter list')
     chapter_list = get_chapter_list(url)
     print('Downloading images')
     for chapter_num, chapter_url in chapter_list:
+        if numSpChapter!=-1:
+            if numSpChapter != chapter_num:
+                continue
         folder = create_folder(comic_str, chapter_num)
         img_list = get_image_list(chapter_url)
         thread = Thread(target=download_images, args=(img_list, folder))
@@ -124,8 +142,12 @@ def main():
 
     if PDF:
         for chapter_num, _ in chapter_list:
+            if numSpChapter!=-1:
+                if numSpChapter != chapter_num:
+                    continue
             print('Creating pdf file for chapter {}'.format(chapter_num))
             create_pdf(get_folder(comic_str, chapter_num), chapter_num)
+            clean_jpg(get_folder(comic_str, chapter_num))
     print('All completed!')
 
 if __name__ == '__main__':
